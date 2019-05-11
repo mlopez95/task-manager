@@ -15,38 +15,23 @@
 			<section class="main">
 				<input id="input-add-task" class="toggle-all" type="checkbox">
 				<ul id="todo-list" class="todo-list">
-					<li id="1557594132045" class="completed">
-						<div class="view">
-							<input class="toggle" type="checkbox">
-							<label>Hola</label>
-							<button class="destroy">
-							</button>
-						</div>
-					</li>
-					<li id="asd" class="">
-						<div class="view">
-							<input class="toggle" type="checkbox">
-							<label>asd</label>
-							<button class="destroy">
-							</button>
-						</div>
-					</li>
+
 				</ul>
 			</section>
 			<footer class="footer">
 				<span class="todo-count"></span>
 				<ul class="filters">
 					<li>
-						<a href="#/" class="selected">All</a>
+						<a id="all-items" href="#/" class="selected">All</a>
 					</li>
 					<li>
-						<a href="#/active">Active</a>
+						<a id="active-items" href="#/active">Active</a>
 					</li>
 					<li>
-						<a href="#/completed">Completed</a>
+						<a id="complete-items" href="#/completed">Completed</a>
 					</li>
 				</ul>
-				<button class="clear-completed">Clear completed</button>
+				<button id="clear-complete" class="clear-completed">Clear completed</button>
 			</footer>
 		</section>
 		<footer class="info">
@@ -64,17 +49,14 @@
 	</body>
 	<script type="application/javascript">
 		$( document ).ready(function() {
-			/**
-			 Para cargar la lista
-			 */
-			ajax('/tasks','GET',null,addItems);
-
+			getAllItems();
 			/**
 			  Para cargar al hacer enter
 			 */
 			$('#input-task').keypress(function (e) {
 				if(e.which ==13){
 					console.log("pressed enter");
+					itemsSize++;
 					save();
 				}
 			});
@@ -93,7 +75,49 @@
 			$('.todo-list li .destroy').click(function (e) {
 				destroy();
 			});
+
+
+			/**
+			 Para cargar al hacer click en el input
+			 */
+			$('#all-items').click(function (data) {
+				$('#all-items').addClass('selected');
+				$('#complete-items').removeClass('selected');
+				$('#active-items').removeClass('selected');
+				deleteItems()
+				getAllItems()
+			});
+
+			/**
+			 Para cargar al hacer click en el input
+			 */
+			$('#complete-items').click(function (data) {
+				$('#complete-items').addClass('selected');
+				$('#all-items').removeClass('selected');
+				$('#active-items').removeClass('selected');
+				deleteItems();
+				getItemsFilter(true);
+			});
+
+			/**
+			 Para cargar al hacer click en el input
+			 */
+			$('#active-items').click(function (data) {
+				$('#active-items').addClass('selected');
+				$('#all-items').removeClass('selected');
+				$('#complete-items').removeClass('selected');
+				deleteItems()
+				getItemsFilter(false);
+			});
+
+			$('#clear-complete').click(function(){
+				clearCompleted();
+			});
+
+
+
 		});
+		var itemsSize;
 
 		/**
 		 Para cargar varios items desde un array
@@ -101,8 +125,9 @@
 		var addItems = function (data) {
 			data.forEach(function(element) {
 				addItem(element);
-				document.getElementById('button-'+element.id).addEventListener('click',destroy,false);
 			});
+
+			return data.length;
 
 		};
 
@@ -118,16 +143,21 @@
 
 			$('#'+data.id).append('' +
 					'<div  class="view">' +
-					'	<input class="toggle" type="checkbox"> ' +
-					'	<label>'+data.description+'</label>' +
+					'	<input id="checkbox-'+data.id+'" class="toggle" type="checkbox"> ' +
+					'	<label id="label-'+data.id+'" class="label">'+data.description+'</label>' +
 					'	<button id="button-'+data.id+'" class="destroy">      </button>' +
 					'</div>');
+
+			document.getElementById('button-'+data.id).addEventListener('click',destroy,false);
+			document.getElementById('label-'+data.id).addEventListener('dblclick',edit,false);
+			document.getElementById('checkbox-'+data.id).addEventListener('click',completed,false);
 
 		};
 
 		var success = function (data) {
 			console.log('Vamos Messi...',data);
 		};
+
 		/**
 		 Para guardar un item
 		 */
@@ -148,8 +178,9 @@
 		 */
 		var successSave = function (data) {
 			$('#input-task').val('');
-			addItem(data);
-		}
+			if($('#complete-items').attr('class')!=='selected')
+				addItem(data);
+		};
 
 		/**
 		 Para eliminar un item
@@ -165,7 +196,108 @@
 		var destroy = function () {
 			var id = this.id.split('-');
 			deleteItem(id[1]);
+		};
+
+		var editando_id;
+		var edit = function () {
+			if(editando_id!==undefined){
+				exitEdition();
+			}
+
+			var id = this.id.split('-');
+			editando_id = id[1];
+			var li = $('#'+id[1]);
+			li.addClass('editing');
+			li.append('<input id="edit-'+id[1]+'" class="edit">')
+			$('#edit-'+id[1]).val(this.textContent);
+			document.getElementById('edit-'+id[1]).addEventListener('focusout',exitEdition,false);
+			document.getElementById('edit-'+id[1]).addEventListener('keypress',updateTask,false);
+			$('#edit-'+id[1]).focus();
+			// deleteItem(id[1]);
+		};
+
+		var exitEdition = function () {
+			var li_editando = $('#'+editando_id);
+			li_editando.children('input').remove();
+			li_editando.removeClass('editing');
+		};
+
+		var updateTask = function (e) {
+			if(e.which ==13){
+				console.log("pressed enter");
+				var edit = $('.edit')[0].id.split('-');
+				var description = $('#edit-'+edit[1]).val();
+				if(description==null || description===undefined || description.trim().length<1)
+					return false;
+
+				updated(edit[1], description, false);
+			}
+
+		};
+
+		var updated = function (id, description, complete) {
+			var params = {
+				description: description,
+				completed: complete
+			};
+			ajax('/task/'+id,'PUT', JSON.stringify(params), successUpdate);
+		};
+
+		var successUpdate = function (data) {
+			successDelete(data.id);
+			successSave(data);
+		};
+
+		var deleteItems = function(data){
+			$('#todo-list').empty();
+
+		};
+
+		var addItemsAll = function (data) {
+			itemsSize = data.length;
+			addItems(data);
+		};
+
+		/**
+		 Para cargar la lista con todos los items
+		 */
+		var getAllItems = function () {
+			ajax('/tasks','GET',null,addItemsAll);
+		};
+
+		var getItemsFilter = function (complete) {
+			ajax('/tasks/filter?page=0&size='+itemsSize+'&completed='+complete,'GET',null,successFilter);
+		};
+
+		var successFilter = function (data) {
+			addItems(data.content);
+		};
+
+		var completed = function (data) {
+			var id = this.id.split('-');
+			var li = $('#'+id[1]);
+			var classs = li.attr('class');
+			var description = document.getElementById('label-'+id[1]).innerText;
+			if(classs.indexOf('completed')<0){
+				li.addClass('completed');
+				updated(id[1],description, true);
+			}else{
+				li.removeClass('completed', false);
+				updated(id[1],description, false);
+
+			}
+
+		};
+
+		var clearCompleted = function () {
+			var array = $('#todo-list').children('li.completed');
+			console.log(array);
+			array.each(function() {
+				deleteItem(this.id);
+			});
 		}
+
+
 
 
 	</script>
