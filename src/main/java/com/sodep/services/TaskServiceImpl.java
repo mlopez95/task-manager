@@ -14,6 +14,7 @@ import com.sodep.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class TaskServiceImpl implements TaskService {
     
     @Override
     public Iterable<Task> findAll() {
-        return taskRepo.findAll();
+        return taskRepo.findAll(new Sort(Sort.Direction.ASC, "createdAt"));
     }
 
     @Override
@@ -77,7 +78,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private boolean permitsAssigned(Long idAssignee) {
-        List<Task> tasks = findAllForAssignee(idAssignee);
-        return tasks.size() < 5;
+        if(idAssignee==null)
+            return true;
+        else{
+            List<Task> tasks = findAllForAssignee(idAssignee);
+            return tasks.size() < 5;
+        }
     }
 }

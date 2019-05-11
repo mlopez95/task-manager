@@ -42,7 +42,10 @@ public class TaskDaoImpl extends JdbcDaoSupport implements TaskDao {
 
                 PreparedStatement ps = connection.prepareStatement(SQL_INSERT_TASK, Statement.RETURN_GENERATED_KEYS);
                 ps.setString(1,request.getDescription());
-                ps.setInt(2,request.getAssigneeId().intValue());
+                if(request.getAssigneeId()==null)
+                    ps.setNull(2,Types.NULL);
+                else
+                    ps.setInt(2,request.getAssigneeId().intValue());
 
                 if(request.getDue()==null)
                     ps.setNull(3, Types.NULL);

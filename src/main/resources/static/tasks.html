@@ -10,12 +10,28 @@
 		<section class="todoapp">
 			<header class="header">
 				<h1>Tasks</h1>
-				<input class="new-todo" placeholder="What needs to be done?" autofocus>
+				<input id="input-task" class="new-todo" placeholder="What needs to be done?" autofocus>
 			</header>
 			<section class="main">
-				<input class="toggle-all" type="checkbox">
-				<label for="toggle-all">Mark all as complete</label>
-				<ul class="todo-list"></ul>
+				<input id="input-add-task" class="toggle-all" type="checkbox">
+				<ul id="todo-list" class="todo-list">
+					<li id="1557594132045" class="completed">
+						<div class="view">
+							<input class="toggle" type="checkbox">
+							<label>Hola</label>
+							<button class="destroy">
+							</button>
+						</div>
+					</li>
+					<li id="asd" class="">
+						<div class="view">
+							<input class="toggle" type="checkbox">
+							<label>asd</label>
+							<button class="destroy">
+							</button>
+						</div>
+					</li>
+				</ul>
 			</section>
 			<footer class="footer">
 				<span class="todo-count"></span>
@@ -36,13 +52,121 @@
 		<footer class="info">
 			<p>Double-click to edit a todo</p>
 		</footer>
-		<script src="js/base.js"></script>
+		<script src="js/jquery-3.4.1.js"></script>
+		<!--<script src="js/base.js"></script>-->
 		<script src="js/helpers.js"></script>
-		<script src="js/store.js"></script>
-		<script src="js/model.js"></script>
-		<script src="js/template.js"></script>
-		<script src="js/view.js"></script>
-		<script src="js/controller.js"></script>
-		<script src="js/app.js"></script>
+		<!--<script src="js/store.js"></script>-->
+		<!--<script src="js/model.js"></script>-->
+		<!--<script src="js/template.js"></script>-->
+		<!--<script src="js/view.js"></script>-->
+		<!--<script src="js/controller.js"></script>-->
+		<script src="js/ajax.js"></script>
 	</body>
+	<script type="application/javascript">
+		$( document ).ready(function() {
+			/**
+			 Para cargar la lista
+			 */
+			ajax('/tasks','GET',null,addItems);
+
+			/**
+			  Para cargar al hacer enter
+			 */
+			$('#input-task').keypress(function (e) {
+				if(e.which ==13){
+					console.log("pressed enter");
+					save();
+				}
+			});
+
+			/**
+			 Para cargar al hacer click en el input
+			 */
+			$('#input-add-task').click(function (data) {
+				save();
+				$('#input-add-task').prop('checked', false);
+			});
+
+			/**
+			 Para cargar al hacer enter
+			 */
+			$('.todo-list li .destroy').click(function (e) {
+				destroy();
+			});
+		});
+
+		/**
+		 Para cargar varios items desde un array
+		 */
+		var addItems = function (data) {
+			data.forEach(function(element) {
+				addItem(element);
+				document.getElementById('button-'+element.id).addEventListener('click',destroy,false);
+			});
+
+		};
+
+		/**
+		 Para cargar un solo item al inicio
+		 */
+		var addItem = function (data) {
+			if(data.completed==='true'){
+				$('#todo-list').prepend('<li id="'+data.id+'" class="completed"></li>');
+			}else
+				$('#todo-list').prepend('<li id="'+data.id+'" class=""></li>');
+
+
+			$('#'+data.id).append('' +
+					'<div  class="view">' +
+					'	<input class="toggle" type="checkbox"> ' +
+					'	<label>'+data.description+'</label>' +
+					'	<button id="button-'+data.id+'" class="destroy">      </button>' +
+					'</div>');
+
+		};
+
+		var success = function (data) {
+			console.log('Vamos Messi...',data);
+		};
+		/**
+		 Para guardar un item
+		 */
+		var save = function () {
+			var description = $('#input-task').val();
+			if(description==null || description===undefined || description.trim().length<1)
+				return false;
+
+			var params = {
+				description: description,
+				completed: false
+			};
+			ajax('/task','POST', JSON.stringify(params), successSave);
+		};
+
+		/**
+		 Funcion que se ejecuta en caso de exito del guardado
+		 */
+		var successSave = function (data) {
+			$('#input-task').val('');
+			addItem(data);
+		}
+
+		/**
+		 Para eliminar un item
+		 */
+		var deleteItem = function (id) {
+			ajax('/task/'+id,'DELETE', null, successDelete(id));
+		};
+
+		var successDelete = function (id) {
+			$('#todo-list').children('#'+id).remove()
+		};
+
+		var destroy = function () {
+			var id = this.id.split('-');
+			deleteItem(id[1]);
+		}
+
+
+	</script>
 </html>

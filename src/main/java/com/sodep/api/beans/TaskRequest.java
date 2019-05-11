@@ -35,13 +35,14 @@ public class TaskRequest {
      */
     private Date completedAt;
 
-    private boolean completed;
+    @NotNull(message = "El campo [completed] no puede ser null")
+    private Boolean completed;
 
-    public boolean isCompleted() {
+    public Boolean isCompleted() {
         return completed;
     }
 
-    public void setCompleted(boolean completed) {
+    public void setCompleted(Boolean completed) {
         this.completed = completed;
     }
 

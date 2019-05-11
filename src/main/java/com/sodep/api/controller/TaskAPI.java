@@ -22,7 +22,7 @@ public class TaskAPI {
     @Autowired
     private TaskService taskService;
 
-    @GetMapping("/task")
+    @GetMapping("/tasks")
     public Iterable<Task> getAllTask() throws ApiException {
         return taskService.findAll();
     }
@@ -33,7 +33,7 @@ public class TaskAPI {
         return taskService.findAllForAssignee(id);
     }
 
-    @GetMapping("/task/filter")
+    @GetMapping("/tasks/filter")
     public Iterable<Task> getAllTaskForFilter (
             @RequestParam(value = "page") int page,
             @RequestParam(value = "size") int size,
