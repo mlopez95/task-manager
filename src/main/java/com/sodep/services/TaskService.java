@@ -5,8 +5,11 @@
  */
 package com.sodep.services;
 
+import com.sodep.api.beans.TaskRequest;
+import com.sodep.api.exception.ApiException;
 import com.sodep.entities.Task;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -14,6 +17,13 @@ import java.util.List;
  */
 public interface TaskService {
 
-    public List<Task> findAll();
-    
+    Iterable<Task> findAll();
+    Task findById(Long id);
+    Task saveTask(TaskRequest task) throws ApiException;
+    Task updateTask(Long id, TaskRequest task) throws ApiException ;
+    void deleteTask(Long id) throws ApiException ;
+    Iterable<Task> findAllForFilter(boolean completed, int page, int size);
+    List<Task> findAllForAssignee(Long assigneeId);
+
+
 }

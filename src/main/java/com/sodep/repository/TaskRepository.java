@@ -6,12 +6,19 @@
 package com.sodep.repository;
 
 import com.sodep.entities.Task;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
+
+import java.util.List;
+
 
 /**
  *
  * @author rodrigo
  */
-public interface TaskRepository extends JpaRepository<Task, Long> {
-    
+public interface TaskRepository extends PagingAndSortingRepository<Task, Long> {
+
+    Page<Task> findAllByCompleted(String completed, Pageable pageable);
+    List<Task> findByAssignee_Id(Long id);
 }

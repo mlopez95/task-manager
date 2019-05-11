@@ -3,10 +3,7 @@ package com.sodep.entities;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name="tasks")
@@ -22,9 +19,11 @@ public final class Task implements Serializable {
 	private Long id;
     
 	private String description;
-    
-	private Assignee assignee;
-    
+
+
+    @ManyToOne @JoinColumn(name = "assigned_to")
+    private Assignee assignee;
+
     /**
      The date where the task
      should be completed.
@@ -42,6 +41,9 @@ public final class Task implements Serializable {
       was created.
     */
 	private Date createdAt;
+
+    /** Status the task */
+	private String completed;
 
     public Long getId() {
         return id;
@@ -89,5 +91,13 @@ public final class Task implements Serializable {
 
     public void setCreatedAt(final Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(String completed) {
+        this.completed = completed;
     }
 }

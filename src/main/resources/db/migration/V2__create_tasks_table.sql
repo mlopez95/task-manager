@@ -7,14 +7,15 @@ create table tasks (
     due timestamp,
     completed_at timestamp,
     created_at timestamp default current_timestamp not null,
+    completed varchar default 'false' not null,
     foreign key (assigned_to) references assignees
 );
 
-insert into tasks (description, assigned_to, due)
-values ('Implement REST service for task list.', 1, timestamp '2013-09-01 17:00:00');
+insert into tasks (description, assigned_to, due, completed)
+values ('Implement REST service for task list.', 1, timestamp '2013-09-01 17:00:00', 'true');
 
-insert into tasks (description, assigned_to, due, completed_at)
-values ('Design GUI for task list signup form.', 2, timestamp '2013-09-02 12:00:00', timestamp '2013-08-29 13:42:22');
+insert into tasks (description, assigned_to, due, completed_at, completed)
+values ('Design GUI for task list signup form.', 2, timestamp '2013-09-02 12:00:00', timestamp '2013-08-29 13:42:22', 'true');
 
 insert into tasks (description, assigned_to, due)
 values ('Find first customer for task list app.', 3, timestamp '2013-10-01 08:00:00');
