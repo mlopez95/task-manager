@@ -1,5 +1,7 @@
 package com.sodep.entities;
 
+import com.sodep.api.beans.TaskRequest;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -21,7 +23,8 @@ public final class Task implements Serializable {
 	private String description;
 
 
-    @ManyToOne @JoinColumn(name = "assigned_to")
+    @ManyToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "assigned_to")
     private Assignee assignee;
 
     /**
@@ -99,5 +102,26 @@ public final class Task implements Serializable {
 
     public void setCompleted(String completed) {
         this.completed = completed;
+    }
+
+    public Task(TaskRequest request, Long taskId){
+        if(request.getAssigneeId()!=null){
+            Assignee assignee = new Assignee();
+            assignee.setId(request.getAssigneeId());
+            this.assignee = assignee;
+        }
+
+        if(taskId!=null){
+            this.id = taskId;
+        }
+        this.completedAt = request.getCompletedAt();
+        this.completed= String.valueOf(request.isCompleted());
+        this.due = request.getDue();
+        this.description = request.getDescription();
+        this.createdAt = new Date();
+
+    }
+
+    public Task() {
     }
 }

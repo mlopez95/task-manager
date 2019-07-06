@@ -3,10 +3,7 @@ package com.sodep.entities;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "assignees")
@@ -19,6 +16,7 @@ public final class Assignee implements Serializable {
 	
 	@Id
 	@GeneratedValue
+    @Column(name = "id")
 	private Long id;
     private String name;
     private String email;

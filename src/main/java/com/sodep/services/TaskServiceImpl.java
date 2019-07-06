@@ -6,11 +6,11 @@
 package com.sodep.services;
 
 import com.sodep.api.beans.TaskRequest;
-import com.sodep.api.dao.TaskDao;
 import com.sodep.api.exception.ApiException;
 import com.sodep.api.exception.ErrorConstants;
 import com.sodep.entities.Task;
 import com.sodep.repository.TaskRepository;
+import com.sodep.repository.TaskRepositoryPersistent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +31,7 @@ public class TaskServiceImpl implements TaskService {
     private TaskRepository taskRepo;
 
     @Autowired
-    private TaskDao taskDao;
+    private TaskRepositoryPersistent persistent;
     
     @Override
     public Iterable<Task> findAll() {
@@ -57,16 +57,21 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task saveTask(TaskRequest taskRequest) throws ApiException {
-        if(permitsAssigned(taskRequest.getAssigneeId()))
-            return taskDao.save(taskRequest);
-        else
-            throw new ApiException(ErrorConstants.ERROR_ASSIGNEE_LIMITS);
+
+        Task task = new Task(taskRequest, null);
+        if(permitsAssigned(taskRequest.getAssigneeId())) {
+            Task result = persistent.save(task);
+            return findById(result.getId());
+//            return taskDao.save(taskRequest);
+        }else
+            throw new ApiException(ErrorConstants.ERROR_ASSIGNEE_LIMITS, "10000");
     }
 
     @Override
     public Task updateTask(Long id, TaskRequest task) throws ApiException  {
+        Task task1 = new Task(task, id);
         if(permitsAssigned(task.getAssigneeId()))
-            return taskDao.update(id, task);
+            return persistent.save(task1);
         else
             throw new ApiException(ErrorConstants.ERROR_ASSIGNEE_LIMITS);
 
@@ -74,7 +79,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteTask(Long id) throws ApiException  {
-        taskDao.delete(id);
+        persistent.delete(id);
     }
 
     private boolean permitsAssigned(Long idAssignee) {
